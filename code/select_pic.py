@@ -47,12 +47,12 @@ def Select(img,num=10,name="init",save_root="./pic_save"):
             que.put((blue(im),random.random(),im))
             while que.qsize() > num:
                 que.get()
-    print(que.qsize())
     count = 0
     while not que.empty():
         valid,rd,im = que.get()
         count = count + 1
-        im.save(save_root+"/"+str(name)+"_"+str(valid)[:4]+"_"+str(count)+".png")
+        im = im.convert('RGB')
+        im.save(save_root+"/"+str(name)+"_"+str(valid)[:4]+"_"+str(count)+".jpg")
 
 
 

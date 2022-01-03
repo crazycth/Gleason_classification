@@ -17,13 +17,14 @@ import cv2
 import torchvision
 from pprint import pprint
 from pandas import DataFrame
+from tqdm import tqdm
 dtype = torch.float32
+from select_pic import Select
+from DataLoader import get_loader
+from net_work import *
+
 print("CUDA: ",torch.cuda.is_available())
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-# %load_ext autoreload
-# %autoreload 2
-# %matplotlib inline
-from select_pic import Select
 
 def init():
     """
@@ -38,18 +39,24 @@ def pic_trans():
     :return: dataframe contains pic2label
     """
     name2label=[]
-    for idx,pic_name in enumerate(os.listdir("./svs_pic")):
+    dic = dict()
+    for idx,pic_name in tqdm(enumerate(os.listdir("./svs_pic")),total=len(os.listdir("./svs_pic"))):
         if pic_name.startswith('.'):
             continue
         name = pic_name[-16:-4]
         pic = openslide.OpenSlide("./svs_pic/"+pic_name)
         name2label.append((name,'label'))
+        dic[name]= 0
         Select(pic,10,name)
     df = DataFrame(name2label,columns=['name','label'])
     df.set_index(['name'],inplace=True)
-    return df
+    return df,dic
+
 
 if __name__ == '__main__':
     init()
-    df = pic_trans()
-    pprint(df)
+    df,dic = pic_trans()
+    loader_train , loader_val = get_loader(dic,batch_size=4)
+    model = get_resnet_34(3)
+    optimizer = torch.optim.SGD(params=(para for para in model.parameters() if para.requires_grad == False),lr=1e-4)
+    train_part34(model,optimizer,loader_train,loader_val,1,10,device)
