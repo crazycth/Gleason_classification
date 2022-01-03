@@ -29,7 +29,13 @@ def blue(img):
     matrix1 = matrix1 * matrix2
     return np.average(matrix1)
 
-def Select(img,num=10,save_root="/Users/richard/PycharmProjects/FUN/pic_save"):
+def Select(img,num=10,name="init",save_root="./pic_save"):
+    """
+    :param img: sys picture
+    :param num: the num of part u want to save
+    :param save_root: save root
+    :return: nothing
+    """
     from queue import PriorityQueue
     que = PriorityQueue()
     for x in range(0, img.level_dimensions[1][0] - 224, 224):
@@ -41,14 +47,17 @@ def Select(img,num=10,save_root="/Users/richard/PycharmProjects/FUN/pic_save"):
             que.put((blue(im),random.random(),im))
             while que.qsize() > num:
                 que.get()
+    print(que.qsize())
+    count = 0
     while not que.empty():
         valid,rd,im = que.get()
-        im.save("/Users/richard/PycharmProjects/FUN/pic_save/" + str(valid) + ".png")
+        count = count + 1
+        im.save(save_root+"/"+str(name)+"_"+str(valid)[:4]+"_"+str(count)+".png")
 
 
 
 if __name__ == '__main__':
-    root = "/Users/richard/PycharmProjects/FUN/data/0fad68ea-4c83-4c3e-918a-c8f63bb3adef/TCGA-EJ-5542-01Z-00-DX1.84ef2f6d-29d7-4d36-96b4-14bd30742016.svs"
+    root = "svs_pic/TCGA-EJ-5542-01Z-00-DX1.84ef2f6d-29d7-4d36-96b4-14bd30742016.svs"
     pic = openslide.OpenSlide(root)
     Select(pic,num=20)
 
