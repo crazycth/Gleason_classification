@@ -3,9 +3,13 @@ from torch.utils.data import DataLoader,dataset
 from torch.utils.data import sampler,TensorDataset
 import torchvision.datasets as dset
 from torchvision import transforms
+import torchvision
 from pprint import pprint
 import os
 import cv2
+import numpy as np
+from PIL import Image
+import pandas as pd
 
 class ChunkSampler(sampler.Sampler):
     """Samples elements sequentially from some offset.
@@ -36,12 +40,10 @@ class Date(dataset.Dataset):
 
     def __getitem__(self, index):
         name = self.data[index]
-        svs_from = name.split('_')[0]
-        label = self.dic[svs_from]
         data = cv2.imread("./pic_save/"+name)
         transform = self.transform_train if self.train else self.transform_val
         data = transform(data)
-        label = 0
+        label = self.dic[name[:12]]
         return data,label
 
     def __len__(self):
@@ -63,10 +65,12 @@ transform_val = transforms.Compose([
     transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 ])
 
-def get_loader(dic,batch_size=16):
+def get_loader(batch_size=16):
     """
     :return: loader_train , loader_val
     """
+    data = pd.read_excel("tem_10.xlsx")
+    dic = dict(zip(data['cases'].values, data['tag'].values))
     data_train = Date(dic,True,transform_train,transform_val)
     data_val = Date(dic,False,transform_train,transform_val)
     total_num = len(os.listdir("./pic_save"))
@@ -74,7 +78,7 @@ def get_loader(dic,batch_size=16):
     val_num = int(total_num * 0.2)
     loader_train = DataLoader(data_train,batch_size=batch_size,sampler=ChunkSampler(train_num,0))
     loader_val = DataLoader(data_val,batch_size=batch_size,sampler=ChunkSampler(val_num,train_num))
-    return loader_train , loader_val
+    return loader_train ,loader_val
 
 def show_pic(img):
     cv2.imshow("test", img)
@@ -82,10 +86,14 @@ def show_pic(img):
     cv2.destroyAllWindows()  # important part!
 
 
+def to_pic(pic):
+    beard = transforms.Compose([torchvision.transforms.ToPILImage(mode="RGB")])
+    way = Image.fromarray(pic)
+    return way
+
+
 if __name__ == '__main__':
-    dic = {'14bd30742016': 'label', 'a40035025174': 'label', 'f14f35f54086': 'label'}
-    loader_train , loader_val = get_loader(dic,batch_size=2)
-    data = (loader_val.__iter__().next()[0][0])
-    pprint(data.shape)
-
-
+    dic = {'TCGA-EJ-5525': 1, 'TCGA-2A-A8VX': 1, 'TCGA-EJ-5517': 0, 'TCGA-H9-A6BX': 0, 'TCGA-VN-A88R': 1, 'TCGA-CH-5752': 1, 'TCGA-YL-A8SF': 1, 'TCGA-2A-A8VL': 0, 'TCGA-G9-A9S0': 1,'TCGA-EJ-AB20': 0}
+    loader_train , loader_val = get_loader(dic,batch_size=50)
+    data = (loader_train.__iter__().next()[1])
+    print(data)

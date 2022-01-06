@@ -12,12 +12,23 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from sklearn.model_selection import train_test_split
 import os
+from tqdm import tqdm
 import timm
 import cv2
+import wandb
 import torchvision
 dtype = torch.float32
 print("CUDA: ",torch.cuda.is_available())
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+import wandb
+
+config = {
+    "optim":"SGD",
+    "model":"Resnet34",
+    "learning_rate:":0.01,
+    "batch_size":16,
+    "epo":50
+}
 
 def imshow(axis, inp):
     """Denormalize and show"""
@@ -39,7 +50,6 @@ def get_swin_transformer(classes=3):
     model = timm.models.swin_base_patch4_window7_224(pretrained=True)
     for para in model.parameters():
         para.requires_grad = False
-    print(model)
     in_channel = model.head.in_features
     model.head = torch.nn.Linear(in_channel,classes,True)
     return model
@@ -63,6 +73,7 @@ def check_accuracy_part34(loader, model):
             num_samples += preds.size(0)
         acc = float(num_correct) / num_samples
         print('Got %d / %d correct (%.2f)' % (num_correct, num_samples, 100 * acc))
+        return num_correct*1.0/num_samples
 
 
 def train_part34(model, optimizer, loader_train , loader_val , epochs=1 , print_every = 100,device = torch.device('cpu')):
@@ -76,7 +87,9 @@ def train_part34(model, optimizer, loader_train , loader_val , epochs=1 , print_
 
     Returns: Nothing, but prints model accuracies during training.
     """
+    wandb.init(config=config, project="Medical")
     model = model.to(device=device)  # move the model parameters to CPU/GPU
+    #bar = tqdm(total=epochs*len(loader_train))
     for e in range(epochs):
         for t, (x, y) in enumerate(loader_train):
             model.train()  # put model to training mode
@@ -85,6 +98,7 @@ def train_part34(model, optimizer, loader_train , loader_val , epochs=1 , print_
 
             scores = model(x)
             loss = F.cross_entropy(scores, y)
+            wandb.log({"loss":loss.item()})
 
             # Zero out all of the gradients for the variables which the optimizer
             # will update.
@@ -100,7 +114,9 @@ def train_part34(model, optimizer, loader_train , loader_val , epochs=1 , print_
 
             if t % print_every == 0:
                 print('Iteration %d, loss = %.4f' % (t, loss.item()))
-                check_accuracy_part34(loader_val, model)
+                acc_val = check_accuracy_part34(loader_val, model)
+                acc_train = check_accuracy_part34(loader_train,model)
+                wandb.log({"train_accuracy":acc_train,"validation_accuracy":acc_val})
                 print()
 
 

@@ -51,4 +51,26 @@
 
 ![view](./image/view.png)
 
-​	
+​	但实际中发现图像有较大噪声。
+
+![image-20220104160157827](/Users/richard/Library/Application Support/typora-user-images/image-20220104160157827.png)
+
+​	像这种蓝色就会蓝值特别高，但
+
+## 问题记录
+
+图片有严重蓝色影响，怀疑是医生标记。要想办法去除这种噪声的干扰。
+
+openslide这个库的api挺难用的. 而且document不提及任何细节问题。在此猜测read_region()函数的起点是在第0层的，而size是在不同level上选取的。
+
+
+
+
+
+先蓝色筛，再进一步筛红色
+
+```bash
+ find . -name "*.svs" | xargs -I file mv file ./tmp
+```
+
+Tldr

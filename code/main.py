@@ -23,6 +23,7 @@ from select_pic import Select
 from DataLoader import get_loader
 from net_work import *
 
+
 print("CUDA: ",torch.cuda.is_available())
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
@@ -34,29 +35,21 @@ def init():
     os.system("rm -r ./pic_save")
     os.system("mkdir ./pic_save")
 
-def pic_trans():
+def pic_trans(num_limit=10):
     """
-    :return: dataframe contains pic2label
+    :param num_limit:
+    :return:
     """
-    name2label=[]
-    dic = dict()
     for idx,pic_name in tqdm(enumerate(os.listdir("./svs_pic")),total=len(os.listdir("./svs_pic"))):
         if pic_name.startswith('.'):
             continue
-        name = pic_name[-16:-4]
+        name = pic_name[:12]
         pic = openslide.OpenSlide("./svs_pic/"+pic_name)
-        name2label.append((name,'label'))
-        dic[name]= 0
-        Select(pic,10,name)
-    df = DataFrame(name2label,columns=['name','label'])
-    df.set_index(['name'],inplace=True)
-    return df,dic
+        Select(pic,num_limit,name)
 
 
 if __name__ == '__main__':
-    init()
-    df,dic = pic_trans()
-    loader_train , loader_val = get_loader(dic,batch_size=4)
+    loader_train , loader_val = get_loader(batch_size=16)
     model = get_resnet_34(3)
-    optimizer = torch.optim.SGD(params=(para for para in model.parameters() if para.requires_grad == False),lr=1e-4)
-    train_part34(model,optimizer,loader_train,loader_val,1,10,device)
+    optimizer = torch.optim.SGD(params=(para for para in model.parameters() if para.requires_grad == True),lr=0.001,momentum=0.9,weight_decay=0.1)
+    train_part34(model,optimizer,loader_train,loader_val,50,20,device)
