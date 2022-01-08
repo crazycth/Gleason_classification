@@ -55,7 +55,7 @@ def Select_Blue(img,num=40):
             im = img.read_region((x, y), 1, (224, 224))
             valid = check_valid(im)
             valid_blue = blue(im)
-            if valid <= 0.6 or valid_blue >= 100:
+            if valid <= 0.7 or valid_blue >= 100:
                 continue
             que.put((valid_blue, random.random(), im, x, y))
             while que.qsize() > num:
@@ -72,7 +72,9 @@ def Select_Blue(img,num=40):
 def Select_Red(img_list,num=10,name="init",save_root=",/pic_save"):
     que = PriorityQueue()
     for img in img_list:
+        #Change!
         valid_red = red(img)
+        valid_red = blue(img)
         que.put((valid_red,random.random(),img))
         while que.qsize()>num:
             que.get()
