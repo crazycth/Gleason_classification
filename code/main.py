@@ -31,14 +31,13 @@ def pic_trans(num_limit=10):
 
 
 def main_train(fold=10):
-    model = get_swin_transformer(3)
-    optimizer = torch.optim.SGD(params=(para for para in model.parameters() if para.requires_grad == True),lr=0.001,weight_decay=0.1,momentum=0.9)
+    model = get_swin_transformer(2)
+    optimizer = torch.optim.SGD(params=(para for para in model.parameters() if para.requires_grad == True),lr=0.01,weight_decay=0.1,momentum=0.9)
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer,step_size=100,gamma=0.1)
     for t in range(1):
         loader_train , loader_val = get_loader(batch_size=64)
-        train_part34(model,optimizer,loader_train,loader_val,300,100,device,scheduler)
+        train_part34(model,optimizer,loader_train,loader_val,300,50,device,scheduler)
 
 
 if __name__ == '__main__':
-    init()
-    pic_trans(20)
+    main_train()

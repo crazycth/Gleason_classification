@@ -41,7 +41,6 @@ def get_swin_transformer(classes=3):
     model = timm.models.swin_base_patch4_window7_224(pretrained=True)
     for para in model.parameters():
         para.requires_grad = False
-    print(model)
     in_channel = model.head.in_features
     model.head = torch.nn.Linear(in_channel,classes,True)
     return model
@@ -65,9 +64,10 @@ def check_accuracy_part34(loader, model):
             num_samples += preds.size(0)
         acc = float(num_correct) / num_samples
         print('Got %d / %d correct (%.2f)' % (num_correct, num_samples, 100 * acc))
+        return acc
 
 
-def train_part34(model, optimizer, loader_train , loader_val , epochs=1 , print_every = 100,device = torch.device('cpu')):
+def train_part34(model, optimizer, loader_train , loader_val , epochs=1 , print_every = 100,device = torch.device('cpu'),scheduler=None):
     """
     Train a model on CIFAR-10 using the PyTorch Module API.
 
@@ -78,8 +78,8 @@ def train_part34(model, optimizer, loader_train , loader_val , epochs=1 , print_
 
     Returns: Nothing, but prints model accuracies during training.
     """
+    wandb.init(project="medical",name="Swin_transformer")
     model = model.to(device=device)  # move the model parameters to CPU/GPU
-    bar = tqdm(total=epochs*len(loader_train))
     count = 0
     for e in range(epochs):
         for t, (x, y) in enumerate(loader_train):
@@ -105,10 +105,13 @@ def train_part34(model, optimizer, loader_train , loader_val , epochs=1 , print_
             count = count + 1
 
             if count % print_every == 0:
-                print('Iteration %d, loss = %.4f' % (t, loss.item()))
-                check_accuracy_part34(loader_val, model)
-                check_accuracy_part34(loader_train,model)
+                print('Iteration %d, loss = %.4f' % (count, loss.item()))
+                acc_val = check_accuracy_part34(loader_val, model)
+                acc_train = check_accuracy_part34(loader_train,model)
+                wandb.log({"val_acc": acc_val, "train_acc": acc_train, "loss": loss})
                 print()
+    if scheduler is not None:
+        scheduler.step()
 
 
 if __name__ == '__main__':

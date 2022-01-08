@@ -73,7 +73,7 @@ def Select_Red(img_list,num=10,name="init",save_root=",/pic_save"):
     que = PriorityQueue()
     for img in img_list:
         #Change!
-        valid_red = red(img)
+        #valid_red = red(img)
         valid_red = blue(img)
         que.put((valid_red,random.random(),img))
         while que.qsize()>num:
