@@ -14,7 +14,7 @@
 
 至此我们得到了449张诊断切片（Diagnostic slide），723张（Tissue slide）与481张病理报告（Pathology report）。
 
-![example1](./image/example1.png)
+<img src="./image/example1.png" alt="image_transform" style="zoom:33%;" />
 
 
 
@@ -38,7 +38,7 @@ $$
 
 ​	对于一些的patch，其所包含的信息为噪声信息，需要将其过滤：例如部分有过多的无效染色，或包含了太多的背景信息。针对无效染色，我们设置如果一个patch的蓝比大于100，或是红比大于110，或是包含图像信息大于99%，我们将其过滤；针对背景信息过多，我们设置如果一个patch包含图像信息少于70%，我们将其过滤。经过筛选，我们得到的patch数据集大致如下：
 
-<img src="./image/Patch_many.png" alt="Patch_many" style="zoom: 33%;" />
+<img src="./image/Patch_many.png" alt="Patch_many" style="zoom: 30%;" />
 
 在不同的染色切片中，染色深浅的不同也会影响模型的准确度。为了消除这个因素，我们选择将其进行色彩归一化：
 
