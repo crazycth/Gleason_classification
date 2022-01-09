@@ -47,7 +47,7 @@ class Date(dataset.Dataset):
         return data,label
 
     def __len__(self):
-        return len(self)
+        return self.len
 
 transform_train = transforms.Compose([
     transforms.ToTensor(),
@@ -84,13 +84,14 @@ def get_loader(batch_size=16):
 def get_random_loader(batch_size=16):
     data = pd.read_excel("tem_10.xlsx")
     dic = dict(zip(data['cases'].values, data['tag'].values))
-    data_train = Date(dic, True, transform_train, transform_val)
-    data_val = Date(dic, False, transform_train, transform_val)
-    total_num = len(os.listdir("./pic_save"))
-    train_num = int(total_num * 0.8)
-    val_num = int(total_num * 0.2)
-    loader_train = DataLoader(data_train, batch_size=batch_size, sampler=torch.utils.data.RandomSampler(data_train,True,train_num))
-    loader_val = DataLoader(data_val, batch_size=batch_size, sampler=torch.utils.data.RandomSampler(data_val,True,val_num))
+    Full_data = Date(dic,True,transform_train,transform_val)
+    train_size = int(len(Full_data) * 0.8)
+    test_size = len(Full_data) - train_size
+    data_train , data_test = torch.utils.data.random_split(Full_data,[train_size,test_size])
+    data_train.train = True
+    data_test.train = False
+    loader_train = DataLoader(data_train, batch_size=batch_size)
+    loader_val = DataLoader(data_test, batch_size=batch_size)
     return loader_train, loader_val
 
 def show_pic(img):
@@ -107,6 +108,6 @@ def to_pic(pic):
 
 if __name__ == '__main__':
     #dic = {'TCGA-EJ-5525': 1, 'TCGA-2A-A8VX': 1, 'TCGA-EJ-5517': 0, 'TCGA-H9-A6BX': 0, 'TCGA-VN-A88R': 1, 'TCGA-CH-5752': 1, 'TCGA-YL-A8SF': 1, 'TCGA-2A-A8VL': 0, 'TCGA-G9-A9S0': 1,'TCGA-EJ-AB20': 0}
-    loader_train , loader_val = get_loader(batch_size=50)
+    loader_train , loader_val = get_random_loader(batch_size=50)
     data = (loader_train.__iter__().next()[1])
     print(data)

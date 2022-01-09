@@ -1,7 +1,7 @@
 import openslide
 import torch
 dtype = torch.float32
-from select_pic import Select
+from select_pic import Select,Select_Blue
 from DataLoader import get_loader,get_random_loader
 from net_work import *
 
@@ -17,7 +17,7 @@ def init():
     os.system("rm -r ./pic_save")
     os.system("mkdir ./pic_save")
 
-def pic_trans(num_limit=10):
+def pic_trans():
     """
     :param num_limit:
     :return:
@@ -27,17 +27,20 @@ def pic_trans(num_limit=10):
             continue
         name = pic_name[:12]
         pic = openslide.OpenSlide("./svs_pic/"+pic_name)
-        Select(pic,num_limit,name)
+        Select(pic,name)
 
 
 def main_train(fold=10):
     model = get_swin_transformer(2)
-    optimizer = torch.optim.SGD(params=(para for para in model.parameters() if para.requires_grad == True),lr=0.01,weight_decay=0.1,momentum=0.9)
-    scheduler = torch.optim.lr_scheduler.StepLR(optimizer,step_size=100,gamma=0.1)
-    for t in range(1):
-        loader_train , loader_val = get_loader(batch_size=64)
-        train_part34(model,optimizer,loader_train,loader_val,300,50,device,scheduler)
+    optimizer = torch.optim.SGD(params=(para for para in model.parameters() if para.requires_grad == True),lr=0.001,weight_decay=0.1,momentum=0.9)
+    optimizer = torch.optim.Adam(params=(para for para in model.parameters() if para.requires_grad == True),lr=0.001,weight_decay=0.1,betas=(0.5,0.999))
+    scheduler = torch.optim.lr_scheduler.StepLR(optimizer,step_size=200,gamma=0.8)
+    for t in range(1):  
+        loader_train , loader_val = get_random_loader(batch_size=32)
+        train_part34(model,optimizer,loader_train,loader_val,3000,50,device,scheduler)
+    torch.save(model,"model")
 
 
 if __name__ == '__main__':
-    main_train()
+    init()
+    pic_trans()
