@@ -87,9 +87,9 @@ def Select_Blue(img,num=40,name="init",save_root="./pic_save"):
     :return: the Sequential of img
     """
     que = PriorityQueue()
-    for x in range(0, img.level_dimensions[0][0] - 224, 224):
-        for y in range(0, img.level_dimensions[0][1] - 224, 224):
-            im = img.read_region((x, y), 1, (224//4, 224//4))
+    for x in range(0, img.level_dimensions[0][0] - 224*4, 224*4):
+        for y in range(0, img.level_dimensions[0][1] - 224*4, 224*4):
+            im = img.read_region((x, y), 1, (224, 224))
             im = im.convert('RGB')
             valid = check_valid(im)
             valid_blue = blue(im)
@@ -103,7 +103,7 @@ def Select_Blue(img,num=40,name="init",save_root="./pic_save"):
     while not que.empty():
         count = count + 1
         valid_blue , rd , x , y = que.get()
-        im = img.read_region((x,y),0,(224,224))
+        im = img.read_region((x,y),1,(224,224))
         im = im.convert('RGB')
         im.save(save_root + "/" + str(name) + "_" + str(valid_blue)[:4] + "_" + str(count) + ".jpg")
         #im.save(save_root+"/"+str(valid_blue)[:4]+"_"+str(valid)[:4]+"_"+str(count)+".jpg")
@@ -156,9 +156,8 @@ def Select(img,name="init",save_root="./pic_save"):
     :return: nothing
     """
     x,y = img.level_dimensions[0]
-    num = int(0.1*(x*y)/(224*224*4*4)  * 0.5)
-    print(num)
-    Select_Blue(img,num,name)
+    num = int(0.1*(x*y)/(224*224*4*4) * 0.25)
+    Select_Blue(img,num,name,save_root)
 
     # from queue import PriorityQueue
     # que = PriorityQueue()

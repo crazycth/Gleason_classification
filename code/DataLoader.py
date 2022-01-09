@@ -33,14 +33,14 @@ class Date(dataset.Dataset):
         super(Date,self).__init__()
         self.dic = label_dic
         self.train = train
-        self.data = os.listdir("./pic_save")
+        self.data = os.listdir("./pic_trans")
         self.len = len(self.data)
         self.transform_train = transform_train
         self.transform_val = transform_val
 
     def __getitem__(self, index):
         name = self.data[index]
-        data = cv2.imread("./pic_save/"+name)
+        data = cv2.imread("./pic_trans/"+name)
         transform = self.transform_train if self.train else self.transform_val
         data = transform(data)
         label = self.dic[name[:12]]
@@ -51,17 +51,17 @@ class Date(dataset.Dataset):
 
 transform_train = transforms.Compose([
     transforms.ToTensor(),
-    transforms.RandomResizedCrop(224,scale=(0.08,1.0),ratio=(3.0/4.0,4.0/3.0)),
-    transforms.RandomHorizontalFlip(),
-    transforms.ColorJitter(brightness=0.4,contrast=0.4,saturation=0.4),
+    # transforms.RandomResizedCrop(224,scale=(0.08,1.0),ratio=(3.0/4.0,4.0/3.0)),
+    # transforms.RandomHorizontalFlip(),
+    # transforms.ColorJitter(brightness=0.4,contrast=0.4,saturation=0.4),
     transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 ]
 )
 
 transform_val = transforms.Compose([
     transforms.ToTensor(),
-    transforms.Resize((224,224)),
-    transforms.CenterCrop(224),
+    # transforms.Resize((224,224)),
+    # transforms.CenterCrop(224),
     transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 ])
 
@@ -73,11 +73,11 @@ def get_loader(batch_size=16):
     dic = dict(zip(data['cases'].values, data['tag'].values))
     data_train = Date(dic,True,transform_train,transform_val)
     data_val = Date(dic,False,transform_train,transform_val)
-    total_num = len(os.listdir("./pic_save"))
+    total_num = len(os.listdir("./pic_trans"))
     train_num = int(total_num * 0.8)
     val_num = int(total_num * 0.2)
-    loader_train = DataLoader(data_train,batch_size=batch_size,sampler=ChunkSampler(train_num,0))
-    loader_val = DataLoader(data_val,batch_size=batch_size,sampler=ChunkSampler(val_num,train_num))
+    loader_train = DataLoader(data_train,batch_size=batch_size,sampler=ChunkSampler(train_num,0),drop_last=True)
+    loader_val = DataLoader(data_val,batch_size=batch_size,sampler=ChunkSampler(val_num,train_num),drop_last=True)
     return loader_train ,loader_val
 
 
@@ -108,6 +108,6 @@ def to_pic(pic):
 
 if __name__ == '__main__':
     #dic = {'TCGA-EJ-5525': 1, 'TCGA-2A-A8VX': 1, 'TCGA-EJ-5517': 0, 'TCGA-H9-A6BX': 0, 'TCGA-VN-A88R': 1, 'TCGA-CH-5752': 1, 'TCGA-YL-A8SF': 1, 'TCGA-2A-A8VL': 0, 'TCGA-G9-A9S0': 1,'TCGA-EJ-AB20': 0}
-    loader_train , loader_val = get_random_loader(batch_size=50)
-    data = (loader_train.__iter__().next()[1])
+    loader_train , loader_val = get_loader(batch_size=50)
+    data = (loader_train.__iter__().next()[0][0])
     print(data)

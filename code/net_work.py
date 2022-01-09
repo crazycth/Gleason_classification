@@ -110,8 +110,8 @@ def train_part34(model, optimizer, loader_train , loader_val , epochs=1 , print_
                 acc_train = check_accuracy_part34(loader_train,model)
                 wandb.log({"val_acc": acc_val, "train_acc": acc_train, "loss": loss})
                 print()
-    if scheduler is not None:
-        scheduler.step()
+        if scheduler is not None:
+            scheduler.step()
 
 
 if __name__ == '__main__':
