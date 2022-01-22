@@ -21,6 +21,7 @@ dtype = torch.float32
 print("CUDA: ",torch.cuda.is_available())
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
+
 def imshow(axis, inp):
     """Denormalize and show"""
     inp = inp.numpy().transpose((1, 2, 0))
@@ -29,20 +30,66 @@ def imshow(axis, inp):
     inp = std * inp + mean
     axis.imshow(inp)
 
+
 def get_resnet_34(classes=3):
-    model = torchvision.models.resnet34(pretrained=True,progress=True)
+    model = torchvision.models.resnet34(pretrained=True)
     for para in model.parameters():
         para.requires_grad = False
     in_channel = model.fc.in_features
     model.fc = torch.nn.Linear(in_channel,classes,True)
     return model
 
+
+def get_resnet_152(classes=3):
+    model = torchvision.models.resnet152(pretrained=True)
+    for para in model.parameters():
+        para.requires_grad = False
+    in_channel = model.fc.in_features
+    model.fc = torch.nn.Linear(in_channel, classes, True)
+    return model
+
+
+def get_resnet_101(classes=3):
+    model = torchvision.models.resnet101(pretrained=True)
+    for para in model.parameters():
+        para.requires_grad = False
+    in_channel = model.fc.in_features
+    model.fc = torch.nn.Linear(in_channel, classes, True)
+    return model
+
+
 def get_swin_transformer(classes=3):
-    model = timm.models.swin_base_patch4_window7_224(pretrained=True)
+    model = timm.models.swin_large_patch4_window7_224(pretrained=True)
     for para in model.parameters():
         para.requires_grad = False
     in_channel = model.head.in_features
     model.head = torch.nn.Linear(in_channel,classes,True)
+    return model
+
+
+def get_large_transformer(classes=3):
+    model = timm.models.swin_large_patch4_window7_224(pretrained=True)
+    for para in model.parameters():
+        para.requires_grad = False
+    in_channel = model.head.in_features
+    model.head = torch.nn.Linear(in_channel, classes, True)
+    return model
+
+
+def get_convnext_base(classes=3):
+    model = timm.models.convnext_base(pretrained=True)
+    for para in model.parameters():
+        para.requires_grad = False
+    in_channel = model.head.fc.in_features
+    model.head.fc = torch.nn.Linear(in_channel, classes, True)
+    return model
+
+def get_convnext_small(classes=3):
+    model = timm.models.convnext_small(pretrained=True)
+    for para in model.parameters():
+        para.requires_grad = False
+    in_channel = model.head.fc.in_features
+    model.head.fc = torch.nn.Linear(in_channel, classes, True)
     return model
 
 
@@ -78,7 +125,8 @@ def train_part34(model, optimizer, loader_train , loader_val , epochs=1 , print_
 
     Returns: Nothing, but prints model accuracies during training.
     """
-    wandb.init(project="medical",name="Swin_transformer")
+    wandb.init(project="medical",name="Swin_transformer",save_code=True,notes="")
+    wandb.watch(model)
     model = model.to(device=device)  # move the model parameters to CPU/GPU
     count = 0
     for e in range(epochs):
@@ -86,33 +134,28 @@ def train_part34(model, optimizer, loader_train , loader_val , epochs=1 , print_
             model.train()  # put model to training mode
             x = x.to(device=device, dtype=dtype)  # move to device, e.g. GPU
             y = y.to(device=device, dtype=torch.long)
-
             scores = model(x)
             loss = F.cross_entropy(scores, y)
-
             # Zero out all of the gradients for the variables which the optimizer
             # will update.
             optimizer.zero_grad()
-
             # This is the backwards pass: compute the gradient of the loss with
             # respect to each  parameter of the model.
             loss.backward()
-
             # Actually update the parameters of the model using the gradients
             # computed by the backwards pass.
             optimizer.step()
-
             count = count + 1
 
             if count % print_every == 0:
                 print('Iteration %d, loss = %.4f' % (count, loss.item()))
                 acc_val = check_accuracy_part34(loader_val, model)
                 acc_train = check_accuracy_part34(loader_train,model)
-                wandb.log({"val_acc": acc_val, "train_acc": acc_train, "loss": loss})
+                wandb.log({"val_acc": acc_val, "train_acc": acc_train, "loss": loss,"lr":scheduler.get_lr()})
                 print()
         if scheduler is not None:
             scheduler.step()
 
-
 if __name__ == '__main__':
-    get_resnet_34(3)
+    model = get_convnext_small(2)
+    print(model)

@@ -9,6 +9,7 @@ import os
 import cv2
 import numpy as np
 from PIL import Image
+import random
 import pandas as pd
 
 class ChunkSampler(sampler.Sampler):
@@ -29,18 +30,20 @@ class ChunkSampler(sampler.Sampler):
 
 
 class Date(dataset.Dataset):
-    def __init__(self,label_dic,train=True,transform_train = None , transform_val = None):
+    def __init__(self,label_dic,train=True,transform_train = None , transform_val = None , root = None):
+        self.root = root
         super(Date,self).__init__()
         self.dic = label_dic
         self.train = train
-        self.data = os.listdir("./pic_trans")
+        self.data = os.listdir(self.root)
+        random.shuffle(self.data)
         self.len = len(self.data)
         self.transform_train = transform_train
         self.transform_val = transform_val
 
     def __getitem__(self, index):
         name = self.data[index]
-        data = cv2.imread("./pic_trans/"+name)
+        data = cv2.imread(self.root+"/"+name)
         transform = self.transform_train if self.train else self.transform_val
         data = transform(data)
         label = self.dic[name[:12]]
@@ -53,7 +56,6 @@ transform_train = transforms.Compose([
     transforms.ToTensor(),
     # transforms.RandomResizedCrop(224,scale=(0.08,1.0),ratio=(3.0/4.0,4.0/3.0)),
     # transforms.RandomHorizontalFlip(),
-    # transforms.ColorJitter(brightness=0.4,contrast=0.4,saturation=0.4),
     transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 ]
 )
@@ -65,17 +67,17 @@ transform_val = transforms.Compose([
     transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
 ])
 
-def get_loader(batch_size=16):
+def get_loader(batch_size=16,root=""):
     """
     :return: loader_train , loader_val
     """
     data = pd.read_excel("tem_10.xlsx")
     dic = dict(zip(data['cases'].values, data['tag'].values))
-    data_train = Date(dic,True,transform_train,transform_val)
-    data_val = Date(dic,False,transform_train,transform_val)
-    total_num = len(os.listdir("./pic_trans"))
-    train_num = int(total_num * 0.8)
-    val_num = int(total_num * 0.2)
+    data_train = Date(dic,True,transform_train,transform_val,root=root)
+    data_val = Date(dic,False,transform_train,transform_val,root=root)
+    total_num = len(os.listdir(root))
+    train_num = int(total_num * 0.9)
+    val_num = int(total_num * 0.1)
     loader_train = DataLoader(data_train,batch_size=batch_size,sampler=ChunkSampler(train_num,0),drop_last=True)
     loader_val = DataLoader(data_val,batch_size=batch_size,sampler=ChunkSampler(val_num,train_num),drop_last=True)
     return loader_train ,loader_val

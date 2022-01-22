@@ -27,18 +27,17 @@ def pic_trans():
             continue
         name = pic_name[:12]
         pic = openslide.OpenSlide("./svs_pic/"+pic_name)
-        Select(pic,name,"./pic_save_1")
+        Select(pic,name,"./pic_save")
 
 
 def main_train(fold=10):
-    model = get_swin_transformer(2)
+    model = get_convnext_base(2)
     optimizer = torch.optim.SGD(params=(para for para in model.parameters() if para.requires_grad == True),lr=0.001,weight_decay=0.1,momentum=0.9)
     #optimizer = torch.optim.Adam(params=(para for para in model.parameters() if para.requires_grad == True),lr=0.001,weight_decay=0.1,betas=(0.5,0.999))
     scheduler = torch.optim.lr_scheduler.StepLR(optimizer,step_size=4,gamma=0.8)
-    for t in range(1):  
-        loader_train , loader_val = get_loader(batch_size=32)
-        train_part34(model,optimizer,loader_train,loader_val,300,50,device,scheduler)
-    torch.save(model,"model")
+    for t in range(1):
+        loader_train , loader_val = get_loader(batch_size=32, root="./pic_save")
+        train_part34(model,optimizer,loader_train,loader_val,30,50,device,scheduler)
 
 
 if __name__ == '__main__':

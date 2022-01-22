@@ -53,6 +53,13 @@ def red(img):
     matrix2 = 256.0/(1+R(img)+G(img)+B(img))
     matrix1 = matrix1 * matrix2
     return np.average(matrix1)
+
+def green(img):
+    img = np.array(img).astype('int')
+    matrix1 = (G(img) * 100) / (1 + B(img) + R(img))
+    matrix2 = 256.0 / (1 + R(img) + G(img) + B(img))
+    matrix1 = matrix1 * matrix2
+    return np.average(matrix1)
 #
 # def Select_Blue(img,num=40,name="init",save_root="./pic_save"):
 #     """
@@ -87,14 +94,15 @@ def Select_Blue(img,num=40,name="init",save_root="./pic_save"):
     :return: the Sequential of img
     """
     que = PriorityQueue()
-    for x in range(0, img.level_dimensions[0][0] - 224*4, 224*4):
-        for y in range(0, img.level_dimensions[0][1] - 224*4, 224*4):
-            im = img.read_region((x, y), 1, (224, 224))
+    for x in range(0, img.level_dimensions[0][0] - 224, 224):
+        for y in range(0, img.level_dimensions[0][1] - 224, 224):
+            im = img.read_region((x, y), 1, (224//4, 224//4))
             im = im.convert('RGB')
             valid = check_valid(im)
             valid_blue = blue(im)
             valid_red = red(im)
-            if valid <= 0.7 or valid_blue >= 100 or valid_red>=110 or valid>=0.99:
+            valid_green = green(im)
+            if valid <= 0.7 or valid_blue >= 100 or valid_red>=110 or valid>=0.99 or valid_green>=100:
                 continue
             que.put((valid_blue, random.random(),x, y))
             while que.qsize() > num:
@@ -103,7 +111,7 @@ def Select_Blue(img,num=40,name="init",save_root="./pic_save"):
     while not que.empty():
         count = count + 1
         valid_blue , rd , x , y = que.get()
-        im = img.read_region((x,y),1,(224,224))
+        im = img.read_region((x,y),0,(224,224))
         im = im.convert('RGB')
         im.save(save_root + "/" + str(name) + "_" + str(valid_blue)[:4] + "_" + str(count) + ".jpg")
         #im.save(save_root+"/"+str(valid_blue)[:4]+"_"+str(valid)[:4]+"_"+str(count)+".jpg")
@@ -156,7 +164,8 @@ def Select(img,name="init",save_root="./pic_save"):
     :return: nothing
     """
     x,y = img.level_dimensions[0]
-    num = int(0.1*(x*y)/(224*224*4*4) * 0.25)
+    num = int(0.1*(x*y)/(224*224*4*4) * 0.5)
+    print(num)
     Select_Blue(img,num,name,save_root)
 
     # from queue import PriorityQueue
