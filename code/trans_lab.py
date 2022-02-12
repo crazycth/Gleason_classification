@@ -2,6 +2,7 @@ import cv2
 import os
 import numpy as np
 from PIL import Image
+from tqdm import tqdm
 
 
 def BGR2RGB(img):
@@ -54,8 +55,9 @@ def trans_lab(img,target):
 def Color_Normalization(target_img=None):
     target = BGR2RGB(target_img)
     target = get_target(target)
-    for pic_path in os.listdir("pic_save"):
-        path = "./pic_save/"+pic_path
+    for pic_path in tqdm(os.listdir("pic_save_1")):
+        if pic_path.startswith("."):continue
+        path = "./pic_save_1/"+pic_path
         pic = cv2.imread(path)
         pic = BGR2RGB(pic)
         pic = trans_lab(pic,target)
@@ -63,8 +65,6 @@ def Color_Normalization(target_img=None):
         img.save("./pic_trans_1/"+pic_path)
 
 
-
 if __name__ == '__main__':
-    target = cv2.imread("/Users/richard/PycharmProjects/FUN/pic_save/TCGA-H9-A6BX_56.8_20.jpg")
-
-    Color_Normalization(target)
+    target_pic = cv2.imread("/Users/richard/PycharmProjects/FUN/pic_save_1/TCGA-2A-A8VL_53.7_2.jpg")
+    Color_Normalization(target_pic)

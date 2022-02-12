@@ -78,8 +78,10 @@ def get_limit():
         limit.append(pic[:12])
     return limit
 
+
 def get_dict():
-    dict = {('TCGA-XJ-A9DQ', 0): 234, ('TCGA-KK-A8I9', 0): 65, ('TCGA-2A-A8VX', 1): 397, ('TCGA-J4-A67Q', 0): 249, ('TCGA-EJ-7782', 1): 417, ('TCGA-XJ-A9DQ', 1): 303, ('TCGA-G9-A9S0', 1): 489, ('TCGA-EJ-A46B', 1): 476, ('TCGA-J4-A67Q', 1): 414, ('TCGA-2A-A8VL', 1): 398, ('TCGA-VP-A87B', 1): 305, ('TCGA-H9-A6BX', 1): 508, ('TCGA-EJ-5517', 1): 453, ('TCGA-V1-A9OF', 0): 142, ('TCGA-YL-A8SF', 1): 437, ('TCGA-V1-A9OQ', 0): 323, ('TCGA-EJ-A46G', 1): 486, ('TCGA-CH-5752', 1): 165, ('TCGA-M7-A722', 1): 281, ('TCGA-2A-A8VX', 0): 39, ('TCGA-2A-A8VL', 0): 143, ('TCGA-KK-A8I9', 1): 126, ('TCGA-HC-7821', 1): 122, ('TCGA-EJ-A46G', 0): 58, ('TCGA-VP-A87B', 0): 40, ('TCGA-EJ-A46B', 0): 50, ('TCGA-HC-7077', 0): 3, ('TCGA-V1-A9OF', 1): 17, ('TCGA-HC-7077', 1): 30, ('TCGA-H9-A6BX', 0): 30, ('TCGA-V1-A9OQ', 1): 30, ('TCGA-M7-A722', 0): 14, ('TCGA-G9-A9S0', 0): 14, ('TCGA-EJ-5517', 0): 1}
+    #dict = {('TCGA-XJ-A9DQ', 0): 234, ('TCGA-KK-A8I9', 0): 65, ('TCGA-2A-A8VX', 1): 397, ('TCGA-J4-A67Q', 0): 249, ('TCGA-EJ-7782', 1): 417, ('TCGA-XJ-A9DQ', 1): 303, ('TCGA-G9-A9S0', 1): 489, ('TCGA-EJ-A46B', 1): 476, ('TCGA-J4-A67Q', 1): 414, ('TCGA-2A-A8VL', 1): 398, ('TCGA-VP-A87B', 1): 305, ('TCGA-H9-A6BX', 1): 508, ('TCGA-EJ-5517', 1): 453, ('TCGA-V1-A9OF', 0): 142, ('TCGA-YL-A8SF', 1): 437, ('TCGA-V1-A9OQ', 0): 323, ('TCGA-EJ-A46G', 1): 486, ('TCGA-CH-5752', 1): 165, ('TCGA-M7-A722', 1): 281, ('TCGA-2A-A8VX', 0): 39, ('TCGA-2A-A8VL', 0): 143, ('TCGA-KK-A8I9', 1): 126, ('TCGA-HC-7821', 1): 122, ('TCGA-EJ-A46G', 0): 58, ('TCGA-VP-A87B', 0): 40, ('TCGA-EJ-A46B', 0): 50, ('TCGA-HC-7077', 0): 3, ('TCGA-V1-A9OF', 1): 17, ('TCGA-HC-7077', 1): 30, ('TCGA-H9-A6BX', 0): 30, ('TCGA-V1-A9OQ', 1): 30, ('TCGA-M7-A722', 0): 14, ('TCGA-G9-A9S0', 0): 14, ('TCGA-EJ-5517', 0): 1}
+    dict = {('TCGA-XJ-A9DQ', 0): 472, ('TCGA-KK-A8I9', 0): 70, ('TCGA-2A-A8VX', 1): 221, ('TCGA-J4-A67Q', 1): 482, ('TCGA-EJ-7782', 1): 235, ('TCGA-G9-A9S0', 1): 409, ('TCGA-EJ-A46B', 1): 410, ('TCGA-2A-A8VL', 0): 227, ('TCGA-VP-A87B', 1): 199, ('TCGA-2A-A8VX', 0): 215, ('TCGA-H9-A6BX', 1): 408, ('TCGA-EJ-5517', 0): 145, ('TCGA-V1-A9OF', 0): 53, ('TCGA-YL-A8SF', 1): 251, ('TCGA-V1-A9OQ', 1): 231, ('TCGA-EJ-5517', 1): 309, ('TCGA-EJ-7782', 0): 182, ('TCGA-EJ-A46G', 0): 318, ('TCGA-H9-A6BX', 0): 130, ('TCGA-CH-5752', 1): 57, ('TCGA-YL-A8SF', 0): 186, ('TCGA-2A-A8VL', 1): 314, ('TCGA-V1-A9OQ', 0): 122, ('TCGA-M7-A722', 1): 211, ('TCGA-G9-A9S0', 0): 94, ('TCGA-EJ-A46G', 1): 226, ('TCGA-J4-A67Q', 0): 181, ('TCGA-KK-A8I9', 1): 121, ('TCGA-VP-A87B', 0): 146, ('TCGA-HC-7821', 0): 62, ('TCGA-HC-7821', 1): 60, ('TCGA-CH-5752', 0): 108, ('TCGA-V1-A9OF', 1): 106, ('TCGA-XJ-A9DQ', 1): 65, ('TCGA-EJ-A46B', 0): 116, ('TCGA-M7-A722', 0): 84, ('TCGA-HC-7077', 1): 16, ('TCGA-HC-7077', 0): 17}
     return dict
 
 # if __name__ == '__main__':
@@ -89,17 +91,24 @@ def get_dict():
 #     print(score_dic)
 
 
-if __name__ == '__main__':
+def final_res():
     res = get_dict()
     data = pd.read_excel("tem_10.xlsx")
     dic = dict(zip(data['cases'].values, data['tag'].values))
-    svs_list = np.unique([x for (x,y) in res.keys()])
-    # pprint(svs_list)
-    # print(len(svs_list))
+    svs_list = np.unique([x for (x, y) in res.keys()])
     for svs in svs_list:
         label = dic[svs]
-        predict_true = res.get((svs,label),0)
-        predict_false = res.get((svs,1^label),0)
-        print(svs,predict_true/(predict_false+predict_true))
+        predict_true = res.get((svs, label), 0)
+        predict_false = res.get((svs, 1 ^ label), 0)
+        print(svs, predict_true / (predict_false + predict_true))
 
+def get_predict():
+    limit = get_limit()
+    model = load_model("model_best")
+    score_dic = predict(model,limit)
+    print(score_dic)
+
+
+if __name__ == '__main__':
+    final_res()
 

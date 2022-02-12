@@ -39,6 +39,5 @@ def main_train(fold=10):
         loader_train , loader_val = get_loader(batch_size=32, root="./pic_save")
         train_part34(model,optimizer,loader_train,loader_val,30,50,device,scheduler)
 
-
 if __name__ == '__main__':
-    main_train()
+    pic_trans()

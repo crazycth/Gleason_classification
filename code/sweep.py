@@ -2,50 +2,55 @@ from main import *
 import math
 from net_work import *
 from pprint import pprint
+
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 sweep_config = {
-    'method':'random'
+    'method': 'random'
 }
 
 parameters_dict = {
-    'optimizer':{
-        'values':['adam','sgd']
+    'optimizer': {
+        'values': ['adam', 'sgd']
     },
-    'lr':{
-        'distribution':'uniform',
-        'min':0,
-        'max':0.01
+    'lr': {
+        'distribution': 'uniform',
+        'min': 0,
+        'max': 0.01
     },
-    'weight_decay':{
-        'distribution':'uniform',
-        'min':0,
-        'max':0.1
+    'weight_decay': {
+        'distribution': 'uniform',
+        'min': 0,
+        'max': 0.03
     },
-    'batch_size':{
-        'distribution':'q_log_uniform',
-        'q':1,
+    'batch_size': {
+        'distribution': 'q_log_uniform',
+        'q': 1,
         'min': math.log(8),
         'max': math.log(64),
     },
-    'epochs':{
-        'value':50
+    'epochs': {
+        'value': 40
     },
-    'model':{
-        'values':['resnet152','small_swin',"large_swin"]
+    'model': {
+        'values': ['resnet152', 'small_swin', "large_swin", "convnext_base", "resnet34"]
     },
-    'root':{
-        'values':["./pic_trans","./pic_save"]
+    'root': {
+        'values': ["./pic_trans_1", "./pic_save_1"]
     }
 }
 
 sweep_config['parameters'] = parameters_dict
 
-def build_optimizer(network,optimizer,lr,weight_decay):
+
+def build_optimizer(network, optimizer, lr, weight_decay):
     if optimizer == "sgd":
-        optimizer = torch.optim.SGD((para for para in network.parameters() if para.requires_grad),lr=lr,momentum=0.9,weight_decay=weight_decay)
+        optimizer = torch.optim.SGD((para for para in network.parameters() if para.requires_grad), lr=lr, momentum=0.9,
+                                    weight_decay=weight_decay)
     elif optimizer == "adam":
-        optimizer = optim.Adam((para for para in network.parameters() if para.requires_grad),lr=lr,betas=(0.5,0.999),weight_decay=weight_decay)
+        optimizer = optim.Adam((para for para in network.parameters() if para.requires_grad), lr=lr, betas=(0.5, 0.999),
+                               weight_decay=weight_decay)
     return optimizer
+
 
 def build_model(network):
     if network == "small_swin":
@@ -54,13 +59,16 @@ def build_model(network):
         return get_large_transformer(2)
     elif network == "resnet34":
         return get_resnet_34(2)
-    elif network =='resnet152':
+    elif network == 'resnet152':
         return get_resnet_152(2)
     elif network == 'resnet101':
         return get_resnet_101(2)
+    elif network == 'convnext_base':
+        return get_convnext_base(2)
 
 
-def train_sweep(model, optimizer, loader_train , loader_val , epochs=1 , print_every=100, device = torch.device('cpu'),scheduler=None):
+def train_sweep(model, optimizer, loader_train, loader_val, epochs=1, print_every=100, device=torch.device('cpu'),
+                scheduler=None):
     """
     Train a model on CIFAR-10 using the PyTorch Module API.
 
@@ -71,7 +79,6 @@ def train_sweep(model, optimizer, loader_train , loader_val , epochs=1 , print_e
 
     Returns: Nothing, but prints model accuracies during training.
     """
-    #wandb.init(project="medical",name="Swin_transformer",save_code=True,notes="")
     wandb.watch(model)
     model = model.to(device=device)  # move the model parameters to CPU/GPU
     count = 0
@@ -97,8 +104,8 @@ def train_sweep(model, optimizer, loader_train , loader_val , epochs=1 , print_e
             if count % print_every == 0:
                 print('Iteration %d, loss = %.4f' % (count, loss.item()))
                 acc_val = check_accuracy_part34(loader_val, model)
-                acc_train = check_accuracy_part34(loader_train,model)
-                wandb.log({"val_acc": acc_val, "train_acc": acc_train, "loss": loss,"epo":e})
+                acc_train = check_accuracy_part34(loader_train, model)
+                wandb.log({"val_acc": acc_val, "train_acc": acc_train, "loss": loss, "epo": e})
                 print()
 
         if scheduler is not None:
@@ -108,14 +115,14 @@ def train_sweep(model, optimizer, loader_train , loader_val , epochs=1 , print_e
 def train(Config=None):
     with wandb.init(config=Config):
         config = wandb.config
-        loader_train , loader_val = get_loader(config["batch_size"],config["root"])
+        loader_train, loader_val = get_loader(config["batch_size"], config["root"])
         network = build_model(config["model"])
-        optimizer = build_optimizer(network,config["optimizer"],config["lr"],config["weight_decay"])
-        scheduler = torch.optim.lr_scheduler.StepLR(optimizer,step_size=4,gamma=0.8)
-        train_sweep(network,optimizer,loader_train,loader_val,40,100,device,scheduler)
-        wandb.save(network,"model")
+        optimizer = build_optimizer(network, config["optimizer"], config["lr"], config["weight_decay"])
+        scheduler = torch.optim.lr_scheduler.StepLR(optimizer, step_size=4, gamma=0.8)
+        train_sweep(network, optimizer, loader_train, loader_val, config["epochs"], 100, device, scheduler)
+        wandb.save(network, "model")
+
 
 if __name__ == '__main__':
-    sweep_id = wandb.sweep(sweep_config,project="Medical")
-    wandb.agent(sweep_id,train,count=30)
-
+    sweep_id = wandb.sweep(sweep_config)
+    wandb.agent(sweep_id, train, count=50)

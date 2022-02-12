@@ -55,3 +55,63 @@ $$
 <img src="./image/loss.png" alt="image_transform" style="zoom:33%;" />
 
 ​	val_acc卡在80%左右上不去，这与我最初预期有差距。按道理来讲在此使用的backbone是最新的，效果应该比两年前的要好。但看nature的文章他们使用的数据集好像是diagnose切片，而我使用的是issue切片。在此考虑换切片类型。这是我第一次在百GB级的数据上进行操作，写了许多自动化工具，但做到这里又重头做起确实是最开始没有研究透彻。
+
+
+
+​	将数据改为diagnose切片，肉眼观察下并看不出太大差距，在此选用small-transformer作为backbone进行分类，由于对医学图像数据并无过多了解，在此并不对图像做数据增广，仅以原图切片作为数据。在同样大小数据集上经过调参准确度可以达到96%。
+
+<img src="./image/visualDL.png" alt="image_transform" style="zoom:33%;" />
+
+<img src="./image/parameters.png" alt="image_transform" style="zoom:33%;" />	
+
+​	该准确度仅是以batch作为数据源的，而我们针对的是svs图片，因此考虑实验验证该网络性能结果。前文已述根据svs图片大小我们根据权值选取前5%的batch作为训练集，认定这些batch内包含病的相关信息。那么在此对于20张全新的svs病理图片进行认证，仍选取切割后前5%的图片作为训练集，计算分类正确的batch所占比例，结果为最差情况下**87.3%**的所选batch分类正确。
+
+​	这显然是一个不错的结果，本repo采取的去噪方法与图像色彩归一化方法均比较落后，后续可考虑使用U-net与语义分割做进一步尝试。
+
+
+
+# 运行说明
+
+#初始化数据
+
+```python
+!a.sh
+!file.sh
+```
+
+#从svs图片中切割patch并进行色域的转变
+
+```shell
+python3 select_pic.py
+python3 trans_lab.py
+```
+
+
+
+#model的训练
+
+```shell
+python3 main.py
+```
+
+
+
+#实验结果验证
+
+```shell
+python3 accuracy.py
+```
+
+
+
+
+
+也可单纯通过sweep来寻找较优超参数，并在wandb中查看结果(推荐)
+
+```
+python3 sweep.py
+```
+
+
+
+本实验所用模型为文件model_best

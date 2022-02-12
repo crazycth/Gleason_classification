@@ -84,6 +84,7 @@ def get_convnext_base(classes=3):
     model.head.fc = torch.nn.Linear(in_channel, classes, True)
     return model
 
+
 def get_convnext_small(classes=3):
     model = timm.models.convnext_small(pretrained=True)
     for para in model.parameters():
